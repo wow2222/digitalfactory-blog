@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Digital Factory Blog',
+  url: 'https://yourdomain.com',
+  description:
+    'Practical guides, prompt packs, and digital tools for creators, freelancers, and side-hustlers.',
+};
+---
+
+<BaseLayout
+  title="About"
+  description="Learn about Digital Factory — who we are, what we publish, and why we exist."
+  canonical="https://yourdomain.com/about"
+  type="website"
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} slot="head" />
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <header class="mb-10">
+      <h1 class="text-4xl font-extrabold text-primary dark:text-white mb-4">About Digital Factory</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400">
+        Practical resources for the modern digital creator.
+      </p>
+    </header>
+
+    <div class="prose prose-lg dark:prose-dark max-w-none">
+      <p>
+        Digital Factory is a content hub and digital product store for creators, freelancers, and
+        entrepreneurs who want to work smarter. Every day, we publish a new article that covers
+        AI prompts, productivity systems, freelance strategy, and side-hustle tactics — all grounded
+        in real workflows, not theory.
+      </p>
+
+      <p>
+        Each article is paired with a downloadable resource available on Gumroad: prompt packs,
+        Notion templates, swipe files, checklists, and frameworks. Our philosophy is simple — if
+        a tool or technique saves you an hour, it's worth publishing. If a resource can do that at
+        scale, it's worth selling.
+      </p>
+
+      <h2>What we cover</h2>
+      <ul>
+        <li><strong>ChatGPT &amp; AI tools</strong> — battle-tested prompt packs and workflows</li>
+        <li><strong>Freelance business</strong> — client acquisition, pricing, and proposals</li>
+        <li><strong>Productivity systems</strong> — Notion setups, time-blocking, async work</li>
+        <li><strong>Digital products</strong> — how to create, launch, and sell them</li>
+        <li><strong>Writing &amp; content</strong> — faster writing systems for bloggers and marketers</li>
+      </ul>
+
+      <h2>How we work</h2>
+      <p>
+        Every article follows the same battle-tested format: a real problem, a clear solution, and
+        a step-by-step breakdown you can act on today. No padding, no vague advice — just the
+        specific tactics, prompts, and frameworks that move the needle. And because we publish
+        daily, there's always something fresh waiting for you.
+      </p>
+
+      <h2>The products</h2>
+      <p>
+        Every post links to a Gumroad product that expands on the topic. We focus on high-value,
+        low-cost impulse buys — the kind of resource that pays for itself with a single use. No
+        fluff, no filler. Just tools that work.
+      </p>
+
+      <h2>Stay in the loop</h2>
+      <p>
+        Subscribe to our <a href="/rss.xml">RSS feed</a> to get new articles as soon as they're
+        published, or browse by <a href="/blog">all articles</a> to find a topic that helps you right now.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

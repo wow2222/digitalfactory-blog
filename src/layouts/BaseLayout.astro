@@ -1,0 +1,81 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SEO from '../components/SEO.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: { url: string; alt: string };
+  pubDate?: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  type?: 'article' | 'website';
+  author?: string;
+  noindex?: boolean;
+}
+
+const { title, description, ...seoProps } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <SEO title={title} description={description} {...seoProps} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Digital Factory Blog RSS" href="/rss.xml" />
+
+    <ViewTransitions />
+    <!-- Apply theme before paint (prevents flash) and after every ViewTransitions swap -->
+    <script is:inline>
+      function applyTheme() {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+      applyTheme();
+      // Re-apply after ViewTransitions swaps the DOM (new <html> won't have the class)
+      document.addEventListener('astro:after-swap', applyTheme);
+    </script>
+
+    <style is:global>
+      :root {
+        --color-primary: #1a1a2e;
+        --color-accent: #e94560;
+        --color-surface: #f8f9fa;
+        --color-text: #2d3748;
+      }
+      .dark {
+        --color-primary: #e2e8f0;
+        --color-accent: #f05579;
+        --color-surface: #1a1a2e;
+        --color-text: #cbd5e0;
+      }
+      body {
+        color: var(--color-text);
+        background-color: #ffffff;
+      }
+      .dark body {
+        background-color: #111827;
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased min-h-screen flex flex-col dark:bg-gray-950">
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

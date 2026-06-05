@@ -1,0 +1,215 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import ProductCTA from '../components/ProductCTA.astro';
+import PostCard from '../components/PostCard.astro';
+
+interface Props {
+  entry: CollectionEntry<'blog'>;
+  headings: { depth: number; slug: string; text: string }[];
+  readTime: number;
+  prevPost: CollectionEntry<'blog'> | null;
+  nextPost: CollectionEntry<'blog'> | null;
+}
+
+const { entry, headings, readTime, prevPost, nextPost } = Astro.props;
+const { title, description, pubDate, updatedDate, author, tags = [], productUrl, canonical, image } = entry.data;
+
+const SITE_URL = 'https://yourdomain.com';
+const postUrl = canonical ?? `${SITE_URL}/blog/${entry.slug}`;
+
+const formattedDate = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const formattedUpdated = updatedDate?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// Related posts: same tags, max 3
+const allPosts = (await getCollection('blog', (p) => !p.data.draft && p.slug !== entry.slug))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const relatedPosts = allPosts
+  .filter((p) => p.data.tags.some((t) => tags.includes(t)))
+  .slice(0, 3);
+
+function getReadTime(): number {
+  return 5;
+}
+
+// TOC: only H2 and H3
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={postUrl}
+  image={image}
+  pubDate={pubDate}
+  updatedDate={updatedDate}
+  tags={tags}
+  type="article"
+  author={author}
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-8 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+      <a href="/" class="hover:text-accent transition-colors">Home</a>
+      <span aria-hidden="true">/</span>
+      <a href="/blog" class="hover:text-accent transition-colors">Blog</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-gray-700 dark:text-gray-200 truncate max-w-xs">{title}</span>
+    </nav>
+
+    <div class="lg:grid lg:grid-cols-[1fr_260px] lg:gap-12">
+      <!-- Main content -->
+      <div>
+        <header class="mb-8">
+          <!-- Tags -->
+          {tags.length > 0 && (
+            <div class="flex flex-wrap gap-2 mb-4">
+              {tags.map((tag) => (
+                <a
+                  href={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+                  class="text-xs bg-accent/10 text-accent font-medium px-2.5 py-1 rounded-full hover:bg-accent/20 transition-colors"
+                >
+                  {tag}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-primary dark:text-white leading-tight mb-4">
+            {title}
+          </h1>
+
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+            <span>By <strong class="text-gray-700 dark:text-gray-300">{author}</strong></span>
+            <span>·</span>
+            <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+            {formattedUpdated && formattedUpdated !== formattedDate && (
+              <>
+                <span>·</span>
+                <span>Updated {formattedUpdated}</span>
+              </>
+            )}
+            <span>·</span>
+            <span>{readTime} min read</span>
+          </div>
+        </header>
+
+        <!-- Article body -->
+        <article class="prose prose-lg max-w-none dark:prose-dark">
+          <slot />
+        </article>
+
+        <!-- Product CTA -->
+        <ProductCTA productUrl={productUrl} title={title} />
+
+        <!-- Share buttons -->
+        <div class="my-8 flex items-center gap-4">
+          <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Share:</span>
+          <a
+            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-accent/10 hover:text-accent px-4 py-2 rounded-lg transition-colors"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            Share on X
+          </a>
+          <button
+            id="copy-link"
+            data-url={postUrl}
+            class="inline-flex items-center gap-2 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-accent/10 hover:text-accent px-4 py-2 rounded-lg transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span id="copy-label">Copy link</span>
+          </button>
+        </div>
+
+        <!-- Prev / Next -->
+        {(prevPost || nextPost) && (
+          <nav class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10 pt-8 border-t border-gray-200 dark:border-gray-800">
+            {prevPost && (
+              <a href={`/blog/${prevPost.slug}`} class="group p-4 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent/50 transition-all">
+                <p class="text-xs text-gray-400 mb-1">← Previous</p>
+                <p class="text-sm font-semibold text-primary dark:text-white group-hover:text-accent transition-colors line-clamp-2">{prevPost.data.title}</p>
+              </a>
+            )}
+            {nextPost && (
+              <a href={`/blog/${nextPost.slug}`} class="group p-4 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-accent/50 transition-all sm:text-right">
+                <p class="text-xs text-gray-400 mb-1">Next →</p>
+                <p class="text-sm font-semibold text-primary dark:text-white group-hover:text-accent transition-colors line-clamp-2">{nextPost.data.title}</p>
+              </a>
+            )}
+          </nav>
+        )}
+
+        <!-- Related posts -->
+        {relatedPosts.length > 0 && (
+          <section class="mt-12">
+            <h2 class="text-xl font-bold text-primary dark:text-white mb-6">Related articles</h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedPosts.map((post) => (
+                <PostCard
+                  title={post.data.title}
+                  description={post.data.description}
+                  pubDate={post.data.pubDate}
+                  slug={post.slug}
+                  tags={post.data.tags}
+                  readTime={getReadTime()}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      <!-- Sidebar TOC -->
+      {tocHeadings.length > 0 && (
+        <aside class="hidden lg:block">
+          <div class="sticky top-24">
+            <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
+              On this page
+            </p>
+            <nav>
+              <ul class="space-y-1">
+                {tocHeadings.map((h) => (
+                  <li>
+                    <a
+                      href={`#${h.slug}`}
+                      class={[
+                        'block text-sm py-1 transition-colors hover:text-accent',
+                        h.depth === 3 ? 'pl-4 text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-400',
+                      ].join(' ')}
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const btn = document.getElementById('copy-link') as HTMLButtonElement | null;
+  const label = document.getElementById('copy-label');
+  btn?.addEventListener('click', async () => {
+    const url = btn.dataset.url ?? location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      if (label) label.textContent = 'Copied!';
+      setTimeout(() => { if (label) label.textContent = 'Copy link'; }, 2000);
+    } catch {
+      // Fallback
+    }
+  });
+</script>
