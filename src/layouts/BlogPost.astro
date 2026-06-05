@@ -16,7 +16,7 @@ interface Props {
 const { entry, headings, readTime, prevPost, nextPost } = Astro.props;
 const { title, description, pubDate, updatedDate, author, tags = [], productUrl, canonical, image } = entry.data;
 
-const SITE_URL = 'https://yourdomain.com';
+const SITE_URL = 'https://digitalfactory.webhostya.com';
 const postUrl = canonical ?? `${SITE_URL}/blog/${entry.slug}`;
 
 const formattedDate = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });

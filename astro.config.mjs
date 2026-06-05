@@ -3,7 +3,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://yourdomain.com',
+  site: 'https://digitalfactory.webhostya.com',
   output: 'static',
   integrations: [
     tailwind({ applyBaseStyles: false }),
@@ -11,7 +11,7 @@ export default defineConfig({
       changefreq: 'weekly',
       priority: 0.7,
       lastmod: new Date(),
-      customPages: ['https://yourdomain.com/about'],
+      customPages: ['https://digitalfactory.webhostya.com/about'],
     }),
   ],
   markdown: {

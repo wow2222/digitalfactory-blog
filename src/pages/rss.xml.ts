@@ -11,13 +11,13 @@ export async function GET(context: APIContext) {
     title: 'Digital Factory Blog',
     description:
       'Practical guides, prompt packs, and digital tools for creators, freelancers, and side-hustlers.',
-    site: context.site?.toString() ?? 'https://yourdomain.com',
+    site: context.site?.toString() ?? 'https://digitalfactory.webhostya.com',
     items: posts.map((post) => ({
       title: post.data.title,
       description: post.data.description.slice(0, 300),
       pubDate: post.data.pubDate,
       link: `/blog/${post.slug}/`,
-      customData: `<guid>https://yourdomain.com/blog/${post.slug}/</guid>`,
+      customData: `<guid>https://digitalfactory.webhostya.com/blog/${post.slug}/</guid>`,
     })),
     customData: `<language>en-us</language>`,
   });

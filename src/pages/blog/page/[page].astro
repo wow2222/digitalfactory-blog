@@ -46,7 +46,7 @@ const nextUrl = currentPage < totalPages ? `/blog/page/${currentPage + 1}` : nul
 <BaseLayout
   title={`Blog | Page ${currentPage} of ${totalPages}`}
   description="Practical guides, prompt packs, and digital tools. New articles daily."
-  canonical={`https://yourdomain.com/blog/page/${currentPage}`}
+  canonical={`https://digitalfactory.webhostya.com/blog/page/${currentPage}`}
 >
   <link rel="prev" href={prevUrl} slot="head" />
   {nextUrl && <link rel="next" href={nextUrl} slot="head" />}
