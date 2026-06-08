@@ -12,7 +12,7 @@ interface Props {
   noindex?: boolean;
 }
 
-const SITE_NAME = 'Digital Factory Blog';
+const SITE_NAME = 'Digital Factory';
 const SITE_URL = 'https://digitalfactory.webhostya.com';
 const DEFAULT_OG = `${SITE_URL}/og/default.png`;
 
@@ -75,7 +75,7 @@ const jsonLd =
       };
 ---
 
-<title>{title} | {SITE_NAME}</title>
+<title>{title === SITE_NAME ? title : `${title} | ${SITE_NAME}`}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
