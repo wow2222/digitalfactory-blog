@@ -13,9 +13,6 @@ image:
 schema:
   type: "BlogPosting"
 ---
-
-# Angel Investors: How to Find & Pitch Your First $100K
-
 You've built a promising product, validated your market, and you're ready to scale—but you're hitting a wall. Finding angel investors who actually respond to your emails, understanding what they want to see in your pitch, and navigating the fundraising process feels like trying to crack an impossible code.
 
 ## Why Angel Investors Matter for Early-Stage Founders
