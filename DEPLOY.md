@@ -1,4 +1,4 @@
-# Cloudflare Pages Deployment
+# Cloudflare  Pages Deployment
 
 ## 1. Push to GitHub
 
