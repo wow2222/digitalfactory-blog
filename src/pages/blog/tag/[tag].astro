@@ -1,0 +1,74 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection('blog', (p) => !p.data.draft);
+
+  const tagMap: Record<string, typeof posts> = {};
+  for (const post of posts) {
+    for (const tag of post.data.tags) {
+      const slug = tag.toLowerCase().replace(/\s+/g, '-');
+      if (!tagMap[slug]) tagMap[slug] = [];
+      tagMap[slug].push(post);
+    }
+  }
+
+  return Object.entries(tagMap).map(([tagSlug, tagPosts]) => ({
+    params: { tag: tagSlug },
+    props: {
+      tagLabel: tagPosts[0].data.tags.find(
+        (t) => t.toLowerCase().replace(/\s+/g, '-') === tagSlug
+      ) ?? tagSlug,
+      posts: tagPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { tagLabel, posts } = Astro.props;
+const { tag } = Astro.params;
+
+function readTime(body: string): number {
+  return Math.max(1, Math.ceil(body.trim().split(/\s+/).length / 200));
+}
+---
+
+<BaseLayout
+  title={`${tagLabel} — Digital Product Tips & Resources`}
+  description={`Browse all ${posts.length} article${posts.length !== 1 ? 's' : ''} about ${tagLabel}.`}
+  canonical={`https://digitalfactory.webhostya.com/blog/tag/${tag}`}
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <!-- Breadcrumb -->
+    <nav class="mb-8 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+      <a href="/" class="hover:text-accent transition-colors">Home</a>
+      <span>/</span>
+      <a href="/blog" class="hover:text-accent transition-colors">Blog</a>
+      <span>/</span>
+      <span class="text-gray-700 dark:text-gray-200">{tagLabel}</span>
+    </nav>
+
+    <header class="mb-10">
+      <div class="inline-block bg-accent/10 text-accent text-xs font-semibold px-3 py-1 rounded-full mb-3">Tag</div>
+      <h1 class="text-3xl font-extrabold text-primary dark:text-white mb-2">{tagLabel}</h1>
+      <p class="text-gray-500 dark:text-gray-400">
+        {posts.length} article{posts.length !== 1 ? 's' : ''}
+      </p>
+    </header>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {posts.map((post) => (
+        <PostCard
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          slug={post.slug}
+          tags={post.data.tags}
+          readTime={readTime(post.body)}
+        />
+      ))}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,112 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: { url: string; alt: string };
+  pubDate?: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  type?: 'article' | 'website';
+  author?: string;
+  noindex?: boolean;
+}
+
+const SITE_NAME = 'Digital Factory Blog';
+const SITE_URL = 'https://digitalfactory.webhostya.com';
+const DEFAULT_OG = `${SITE_URL}/og/default.png`;
+
+const {
+  title,
+  description,
+  canonical = Astro.url.href,
+  image,
+  pubDate,
+  updatedDate,
+  tags = [],
+  type = 'website',
+  author = 'Digital Factory',
+  noindex = false,
+} = Astro.props;
+
+const ogImage = image?.url
+  ? image.url.startsWith('http')
+    ? image.url
+    : `${SITE_URL}${image.url}`
+  : DEFAULT_OG;
+
+const ogImageAlt = image?.alt ?? SITE_NAME;
+
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        datePublished: pubDate?.toISOString(),
+        dateModified: (updatedDate ?? pubDate)?.toISOString(),
+        author: {
+          '@type': 'Person',
+          name: author,
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: SITE_NAME,
+          logo: {
+            '@type': 'ImageObject',
+            url: `${SITE_URL}/favicon.svg`,
+          },
+        },
+        url: canonical,
+        image: ogImage,
+        keywords: tags.join(', '),
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': canonical,
+        },
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        url: SITE_URL,
+        description,
+      };
+---
+
+<title>{title} | {SITE_NAME}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+
+<!-- Open Graph -->
+<meta property="og:type" content={type === 'article' ? 'article' : 'website'} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:site_name" content={SITE_NAME} />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<!-- Article-specific -->
+{type === 'article' && pubDate && (
+  <meta property="article:published_time" content={pubDate.toISOString()} />
+)}
+{type === 'article' && updatedDate && (
+  <meta property="article:modified_time" content={updatedDate.toISOString()} />
+)}
+{type === 'article' && tags.length > 0 && (
+  <meta property="article:tag" content={tags.join(',')} />
+)}
+
+<!-- JSON-LD -->
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />

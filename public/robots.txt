@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://digitalfactory.webhostya.com/sitemap-index.xml

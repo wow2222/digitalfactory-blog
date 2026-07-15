@@ -1,0 +1,59 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  slug: string;
+  tags?: string[];
+  readTime: number;
+}
+
+const { title, description, pubDate, slug, tags = [], readTime } = Astro.props;
+
+const truncatedDesc = description.length > 160 ? description.slice(0, 157) + '…' : description;
+const displayTags = tags.slice(0, 3);
+
+const formattedDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex flex-col gap-3 hover:border-accent/50 hover:shadow-md transition-all duration-200">
+  <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+    <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+    <span>·</span>
+    <span>{readTime} min read</span>
+  </div>
+
+  <h2 class="text-lg font-bold text-primary dark:text-white group-hover:text-accent transition-colors leading-snug">
+    <a href={`/blog/${slug}`} class="stretched-link">{title}</a>
+  </h2>
+
+  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">{truncatedDesc}</p>
+
+  {displayTags.length > 0 && (
+    <div class="flex flex-wrap gap-2 mt-1">
+      {displayTags.map((tag) => (
+        <a
+          href={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+          class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full hover:bg-accent/10 hover:text-accent transition-colors"
+        >
+          {tag}
+        </a>
+      ))}
+    </div>
+  )}
+</article>
+
+<style>
+  .stretched-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  article {
+    position: relative;
+  }
+</style>

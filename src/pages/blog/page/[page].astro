@@ -1,0 +1,97 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+
+export const getStaticPaths = (async () => {
+  const PAGE_SIZE = 12;
+  const allPosts = (await getCollection('blog', (p) => !p.data.draft))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+  const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+  // Generate pages 2+ (page 1 is handled by blog/index.astro)
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => {
+    const page = i + 2;
+    const start = (page - 1) * PAGE_SIZE;
+    return {
+      params: { page: String(page) },
+      props: {
+        posts: allPosts.slice(start, start + PAGE_SIZE),
+        currentPage: page,
+        totalPages,
+        totalPosts: allPosts.length,
+      },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  posts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
+  currentPage: number;
+  totalPages: number;
+  totalPosts: number;
+}
+
+const { posts, currentPage, totalPages, totalPosts } = Astro.props;
+
+function readTime(body: string): number {
+  return Math.max(1, Math.ceil(body.trim().split(/\s+/).length / 200));
+}
+
+const prevUrl = currentPage === 2 ? '/blog' : `/blog/page/${currentPage - 1}`;
+const nextUrl = currentPage < totalPages ? `/blog/page/${currentPage + 1}` : null;
+---
+
+<BaseLayout
+  title={`Blog | Page ${currentPage} of ${totalPages}`}
+  description="Practical guides, prompt packs, and digital tools. New articles daily."
+  canonical={`https://digitalfactory.webhostya.com/blog/page/${currentPage}`}
+>
+  <link rel="prev" href={prevUrl} slot="head" />
+  {nextUrl && <link rel="next" href={nextUrl} slot="head" />}
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <header class="mb-10">
+      <h1 class="text-3xl font-extrabold text-primary dark:text-white mb-2">
+        All articles — Page {currentPage}
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400">
+        {totalPosts} post{totalPosts !== 1 ? 's' : ''} · updated daily
+      </p>
+    </header>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      {posts.map((post) => (
+        <PostCard
+          title={post.data.title}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          slug={post.slug}
+          tags={post.data.tags}
+          readTime={readTime(post.body)}
+        />
+      ))}
+    </div>
+
+    <nav class="flex items-center justify-center gap-3" aria-label="Pagination">
+      <a
+        href={prevUrl}
+        class="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent/50 hover:text-accent transition-colors"
+      >
+        ← Previous
+      </a>
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        Page {currentPage} of {totalPages}
+      </span>
+      {nextUrl && (
+        <a
+          href={nextUrl}
+          class="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent/50 hover:text-accent transition-colors"
+        >
+          Next →
+        </a>
+      )}
+    </nav>
+  </div>
+</BaseLayout>

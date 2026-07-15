@@ -1,0 +1,266 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const PAGE_SIZE = 12;
+
+const allPosts = (await getCollection('blog', (p) => !p.data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const posts = allPosts.slice(0, PAGE_SIZE);
+const totalPages = Math.ceil(allPosts.length / PAGE_SIZE);
+
+function readTime(body: string): number {
+  return Math.max(1, Math.ceil(body.trim().split(/\s+/).length / 200));
+}
+---
+
+<BaseLayout
+  title="Blog"
+  description="Practical guides, prompt packs, and digital tools. New articles daily."
+  canonical="https://digitalfactory.webhostya.com/blog"
+>
+  {totalPages > 1 && <link rel="next" href="/blog/page/2" slot="head" />}
+
+  <!-- Pagefind UI styles loaded only when the index exists (after build) -->
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <header class="mb-8">
+      <h1 class="text-3xl font-extrabold text-primary dark:text-white mb-2">All articles</h1>
+      <p class="text-gray-500 dark:text-gray-400">
+        {allPosts.length} post{allPosts.length !== 1 ? 's' : ''} · updated daily
+      </p>
+    </header>
+
+    <!-- Search box -->
+    <div id="search-wrapper" class="mb-10">
+      <div id="search"></div>
+    </div>
+
+    <!-- Post grid (hidden while search is active) -->
+    <div id="post-grid">
+      {posts.length > 0 ? (
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {posts.map((post) => (
+            <PostCard
+              title={post.data.title}
+              description={post.data.description}
+              pubDate={post.data.pubDate}
+              slug={post.slug}
+              tags={post.data.tags}
+              readTime={readTime(post.body)}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="text-gray-400 py-16 text-center">No posts yet — check back soon.</p>
+      )}
+
+      {totalPages > 1 && (
+        <nav class="flex items-center justify-center gap-3" aria-label="Pagination">
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            Page 1 of {totalPages}
+          </span>
+          <a
+            href="/blog/page/2"
+            class="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent/50 hover:text-accent transition-colors"
+          >
+            Next →
+          </a>
+        </nav>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  /* ── Pagefind theme — matched to site CSS variables ── */
+  :root {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: #e94560;
+    --pagefind-ui-text: #2d3748;
+    --pagefind-ui-background: #ffffff;
+    --pagefind-ui-border: #e2e8f0;
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 10px;
+    --pagefind-ui-image-border-radius: 8px;
+    --pagefind-ui-font: system-ui, -apple-system, sans-serif;
+  }
+  .dark {
+    --pagefind-ui-primary: #f05579;
+    --pagefind-ui-text: #cbd5e0;
+    --pagefind-ui-background: #111827;
+    --pagefind-ui-border: #374151;
+  }
+
+  /* Input field */
+  .pagefind-ui__search-input {
+    background: var(--pagefind-ui-background) !important;
+    color: var(--pagefind-ui-text) !important;
+    border: 1.5px solid var(--pagefind-ui-border) !important;
+    border-radius: var(--pagefind-ui-border-radius) !important;
+    font-size: 1rem !important;
+    padding: 0.75rem 1rem 0.75rem 2.75rem !important;
+    width: 100% !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+  .pagefind-ui__search-input:focus {
+    outline: none !important;
+    border-color: var(--pagefind-ui-primary) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pagefind-ui-primary) 20%, transparent) !important;
+  }
+  .pagefind-ui__search-input::placeholder {
+    color: #9ca3af !important;
+  }
+
+  /* Clear button */
+  .pagefind-ui__search-clear {
+    background: transparent !important;
+    color: #9ca3af !important;
+  }
+  .pagefind-ui__search-clear:hover {
+    color: var(--pagefind-ui-primary) !important;
+  }
+
+  /* Results container */
+  .pagefind-ui__results-area {
+    margin-top: 1.5rem !important;
+  }
+  .pagefind-ui__message {
+    color: #6b7280 !important;
+    font-size: 0.875rem !important;
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Individual result */
+  .pagefind-ui__result {
+    border: 1px solid var(--pagefind-ui-border) !important;
+    border-radius: 12px !important;
+    padding: 1.25rem 1.5rem !important;
+    margin-bottom: 0.75rem !important;
+    background: var(--pagefind-ui-background) !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+    list-style: none !important;
+  }
+  .pagefind-ui__result:hover {
+    border-color: color-mix(in srgb, var(--pagefind-ui-primary) 50%, transparent) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+
+  /* Result title link */
+  .pagefind-ui__result-title {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.35rem !important;
+    line-height: 1.4 !important;
+  }
+  .pagefind-ui__result-link {
+    color: #1a1a2e !important;
+    text-decoration: none !important;
+  }
+  .dark .pagefind-ui__result-link {
+    color: #e2e8f0 !important;
+  }
+  .pagefind-ui__result-link:hover {
+    color: var(--pagefind-ui-primary) !important;
+  }
+
+  /* Excerpt snippet */
+  .pagefind-ui__result-excerpt {
+    font-size: 0.875rem !important;
+    color: #6b7280 !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+  }
+  .dark .pagefind-ui__result-excerpt {
+    color: #9ca3af !important;
+  }
+
+  /* Highlighted match term */
+  .pagefind-ui__result-excerpt mark,
+  mark {
+    background: color-mix(in srgb, var(--pagefind-ui-primary) 18%, transparent) !important;
+    color: var(--pagefind-ui-primary) !important;
+    border-radius: 3px !important;
+    padding: 0 2px !important;
+  }
+
+  /* "Load more" button */
+  .pagefind-ui__button {
+    margin-top: 1rem !important;
+    background: var(--pagefind-ui-primary) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    cursor: pointer !important;
+    transition: opacity 0.15s !important;
+  }
+  .pagefind-ui__button:hover {
+    opacity: 0.88 !important;
+  }
+
+  /* Hide image thumbnails (blog is text-only) */
+  .pagefind-ui__result-image-container {
+    display: none !important;
+  }
+  .pagefind-ui__result-inner {
+    padding-left: 0 !important;
+  }
+</style>
+
+<script is:inline>
+  function initSearch() {
+    const el = document.getElementById('search');
+    const grid = document.getElementById('post-grid');
+    if (!el) return;
+
+    function mountPagefind() {
+      if (typeof window.PagefindUI === 'undefined') {
+        // Not available (dev mode) — hide wrapper
+        const wrapper = document.getElementById('search-wrapper');
+        if (wrapper) wrapper.style.display = 'none';
+        return;
+      }
+      new window.PagefindUI({
+        element: '#search',
+        showImages: false,
+        resetStyles: false,
+        excerptLength: 25,
+        placeholder: 'Search all articles…',
+      });
+
+      el.addEventListener('input', function (e) {
+        const val = e.target && e.target.value ? e.target.value.trim() : '';
+        if (grid) grid.style.display = val ? 'none' : '';
+      });
+
+      el.addEventListener('click', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.pagefind-ui__search-clear')) {
+          if (grid) grid.style.display = '';
+        }
+      });
+    }
+
+    // Load the pagefind UI script dynamically, then mount
+    if (!document.querySelector('script[src="/pagefind/pagefind-ui.js"]')) {
+      const s = document.createElement('script');
+      s.src = '/pagefind/pagefind-ui.js';
+      s.onload = mountPagefind;
+      s.onerror = function () {
+        const wrapper = document.getElementById('search-wrapper');
+        if (wrapper) wrapper.style.display = 'none';
+      };
+      document.head.appendChild(s);
+    } else {
+      mountPagefind();
+    }
+  }
+
+  document.addEventListener('astro:page-load', initSearch);
+</script>
